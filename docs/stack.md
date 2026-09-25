@@ -8,7 +8,7 @@ Objectif du proto : faire **vivre** le parcours propriétaire / gérant (cuves, 
 
 ## Recommandation (une phrase)
 
-**Next.js + TypeScript + Tailwind + shadcn/ui + ApexCharts**, fixtures JSON, carte Leaflet, **sans backend ni base** pour le mockup. Même stack web en production ; API **NestJS + PostgreSQL** et appli terrain **Flutter** plus tard.
+**Next.js (App Router) + TypeScript + Tailwind + shadcn/ui + ApexCharts**, fixtures JSON, carte Leaflet, **sans backend ni base** pour le mockup. Même stack web en production ; API **NestJS + PostgreSQL** et appli terrain **Flutter** plus tard.
 
 ---
 
@@ -26,7 +26,7 @@ Le chauffeur / pompiste (photo, GPS, hors-ligne) n’est **pas** le premier écr
 
 | Choix | Outil | Pourquoi |
 | --- | --- | --- |
-| App | **Next.js 15** (App Router) | Un repo, pages dashboard + voyage + démo mobile, déploiement simple. |
+| App | **Next.js 16** (App Router) | Version sécurisée disponible au scaffold ; un repo, pages dashboard + voyage + démo mobile, déploiement simple. |
 | Langage | **TypeScript** | Le modèle métier (compartiments N, mesures, rôles) casse vite sans types. |
 | UI | **Tailwind CSS** + **shadcn/ui** | Écrans admin (tables, dialogs, tabs) sans designer dédié. |
 | Graphiques dashboard | **ApexCharts** (`apexcharts` + `react-apexcharts`) | Look « ops / finance » (aires, barres, jauges, sparkline) sans Chart.js à styler à la main. |
@@ -126,16 +126,16 @@ Matériel (hors software, à valider avec un installateur ATEX) : sondes de nive
 
 Coche ou amende **avant** `create-next-app` :
 
-- [ ] **Proto = Next.js 15 + TS + Tailwind + shadcn + ApexCharts** (pas Flutter, pas Figma seul)
-- [ ] **Charts = ApexCharts** (`react-apexcharts`, import client `ssr: false`)
-- [ ] **Pas de backend** sur le mockup (fixtures JSON + Zustand)
-- [ ] **Carte = Leaflet / OSM** pour le proto
-- [ ] **Citerne = SVG 2D animé**, pas de 3D
-- [ ] **Démo rôles** par sélecteur, pas de vrai login
-- [ ] **Cible API = NestJS + Prisma + PostgreSQL**
-- [ ] **Cible mobile terrain = Flutter**
-- [ ] **Cible IoT = MQTT**, hors proto
-- [ ] **Monorepo** `apps/web` maintenant, `apps/api` / `apps/mobile` plus tard
+- [x] **Proto = Next.js 16 + TS + Tailwind + shadcn + ApexCharts** (Next 15 a été remplacé car les avis npm présents sont corrigés en 16)
+- [x] **Charts = ApexCharts** (`react-apexcharts`, import client `ssr: false`)
+- [x] **Pas de backend** sur le mockup (fixtures + Zustand)
+- [x] **Carte = Leaflet / OSM** pour le proto
+- [x] **Citerne = SVG 2D animé**, pas de 3D
+- [x] **Démo rôles** par sélecteur, pas de vrai login
+- [x] **Cible API = NestJS + Prisma + PostgreSQL**
+- [x] **Cible mobile terrain = Flutter**
+- [x] **Cible IoT = MQTT**, hors proto
+- [x] **Un seul package web maintenant**, API / mobile plus tard
 
 Si un item est non : le remplacer ici, puis seulement scaffolder.
 

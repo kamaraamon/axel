@@ -13,4 +13,9 @@ Le projet part d’un entretien client (station-service, process 100 % manuel, �
 
 ## Statut
 
-Phase de cadrage. **Stack proposée, pas encore validée** — pas d’application exécutable tant que `docs/stack.md` n’est pas coché.
+Prototype cliquable SUD CONTRACTORS en cours : dashboard professionnel, suivi de voyage, alertes, stations et mode chauffeur.
+
+```bash
+npm install
+npm run dev
+```
