@@ -9,7 +9,8 @@ Le projet part d’un entretien client (station-service, process 100 % manuel, �
 - [Synthèse de l’échange](docs/echange-client.md)
 - [Brainstorming produit / technique](docs/brainstorming.md)
 - [Backlog MVP](docs/mvp-backlog.md)
+- [Stack technique (à valider)](docs/stack.md)
 
 ## Statut
 
-Phase de cadrage. Pas encore d’application exécutable.
+Phase de cadrage. **Stack proposée, pas encore validée** — pas d’application exécutable tant que `docs/stack.md` n’est pas coché.

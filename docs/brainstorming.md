@@ -142,12 +142,7 @@ Trois couches, volontairement séparées : le logiciel ne doit pas mourir si on 
 - **Multi-tenant** : organisation → stations → cuves / pompes ; flotte partagée ou par station.
 - Un **voyage** est l’agrégat métier (documents, points de mesure, alertes, acteurs).
 
-**Stack (indicatif, à trancher en tech spike) :**
-
-- Mobile : Flutter ou React Native (chauffeur + pompiste, photo, GPS).
-- Back : API + workers de règles (seuils, geofence).
-- Temps réel : WebSocket / MQTT vers le dashboard.
-- Cartes : OSM / Mapbox pour le point de suspicion.
+**Stack :** proposition détaillée et checklist de validation dans [`docs/stack.md`](stack.md) (Next.js pour le proto, NestJS + Flutter + MQTT en cible). Rien n’est scaffoldé tant que cette page n’est pas validée.
 
 Le volume de données est petit ; investir dans la **fiabilité capteur** et le **modèle d’écarts**, pas dans Kafka « pour la scale ».
 
