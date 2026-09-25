@@ -8,12 +8,12 @@ describe("session et CRUD mocké", () => {
   });
 
   it("lie le compte au rôle et exige une déconnexion pour en changer", () => {
-    expect(useDemoStore.getState().login("gerant@sud.ci", "demo123")).toBe(true);
+    expect(useDemoStore.getState().login("gerant@sud.ci", "ProFuel#Demo2026!")).toBe(true);
     expect(useDemoStore.getState().role).toBe("Gérant");
     expect(useDemoStore.getState().user?.name).toBe("Awa Koné");
     useDemoStore.getState().logout();
     expect(useDemoStore.getState().user).toBeNull();
-    expect(useDemoStore.getState().login("chauffeur@sud.ci", "demo123")).toBe(true);
+    expect(useDemoStore.getState().login("chauffeur@sud.ci", "ProFuel#Demo2026!")).toBe(true);
     expect(useDemoStore.getState().view).toBe("driver");
   });
 

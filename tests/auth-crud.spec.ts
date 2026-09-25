@@ -10,20 +10,27 @@ async function logout(page: Page) {
   await expect(page.getByRole("heading", { name: "Accéder au centre de contrôle" })).toBeVisible();
 }
 
+async function demoPause(page: Page) {
+  if (process.env.PW_DEMO) await page.waitForTimeout(900);
+}
+
 test("connexion, CRUD propriétaire et isolation des quatre rôles", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Propriétaire", exact: false }).click();
 
-  // Mauvais mot de passe.
-  await page.getByLabel("Mot de passe").fill("incorrect");
-  await page.getByRole("button", { name: "Se connecter" }).click();
-  await expect(page.getByText("Identifiants incorrects")).toBeVisible();
+  // Mauvais mot de passe (couvert hors enregistrement pour éviter la bulle native Chrome).
+  if (!process.env.PW_DEMO) {
+    await page.getByLabel("Mot de passe").fill("incorrect");
+    await page.getByRole("button", { name: "Se connecter" }).click();
+    await expect(page.getByText("Identifiants incorrects")).toBeVisible();
+    await page.getByLabel("Mot de passe").fill("ProFuel#Demo2026!");
+  }
 
   // Propriétaire : tous les CRUD.
-  await page.getByLabel("Mot de passe").fill("demo123");
   await page.getByRole("button", { name: "Se connecter" }).click();
   await expect(page.getByText("Propriétaire", { exact: true }).last()).toBeVisible();
   await expect(page.getByLabel("Changer de rôle")).toHaveCount(0);
+  await demoPause(page);
 
   await page.getByRole("button", { name: "Voyages" }).click();
   const initialTrips = await page.locator("tbody tr").count();
@@ -70,6 +77,7 @@ test("connexion, CRUD propriétaire et isolation des quatre rôles", async ({ pa
   await expect(alert.getByText("Prise en charge")).toBeVisible();
   await alert.getByRole("button", { name: /^Supprimer/ }).click();
   await expect(alert).toHaveCount(0);
+  await demoPause(page);
   await logout(page);
 
   // Gérant : lecture/création/modification, aucune suppression.
@@ -80,6 +88,7 @@ test("connexion, CRUD propriétaire et isolation des quatre rôles", async ({ pa
   await page.getByRole("button", { name: "Stations & stocks" }).click();
   await expect(page.getByRole("button", { name: "Ajouter une station" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /^Modifier Station/ }).first()).toBeVisible();
+  await demoPause(page);
   await logout(page);
 
   // Superviseur : opérations, station en lecture seule.
@@ -88,6 +97,7 @@ test("connexion, CRUD propriétaire et isolation des quatre rôles", async ({ pa
   await expect(page.getByRole("button", { name: "Ajouter une station" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /^Modifier Station/ })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /^Supprimer Station/ })).toHaveCount(0);
+  await demoPause(page);
   await logout(page);
 
   // Chauffeur : aucune navigation administrative.
@@ -95,5 +105,6 @@ test("connexion, CRUD propriétaire et isolation des quatre rôles", async ({ pa
   await expect(page.getByText("Votre mission du jour")).toBeVisible();
   await expect(page.getByText("Navigation")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Voyages" })).toHaveCount(0);
+  await demoPause(page);
   await logout(page);
 });

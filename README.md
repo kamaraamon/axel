@@ -22,7 +22,7 @@ npm run dev
 
 ## Comptes de démonstration
 
-Mot de passe commun : `demo123`.
+Mot de passe commun : `ProFuel#Demo2026!`.
 
 | Niveau | Identifiant | Périmètre |
 | --- | --- | --- |

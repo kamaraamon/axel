@@ -14,7 +14,7 @@ const accounts = [
 export function LoginScreen() {
   const login = useDemoStore((state) => state.login);
   const [email, setEmail] = useState("proprietaire@sud.ci");
-  const [password, setPassword] = useState("demo123");
+  const [password, setPassword] = useState("ProFuel#Demo2026!");
   const [error, setError] = useState(false);
 
   function submit(event: FormEvent) {
@@ -56,7 +56,7 @@ export function LoginScreen() {
                 type="button"
                 key={account.email}
                 className={email === account.email ? "selected" : ""}
-                onClick={() => { setEmail(account.email); setPassword("demo123"); setError(false); }}
+                onClick={() => { setEmail(account.email); setPassword("ProFuel#Demo2026!"); setError(false); }}
               >
                 <strong>{account.label}</strong>
                 <small>{account.scope}</small>
@@ -72,9 +72,9 @@ export function LoginScreen() {
             Mot de passe
             <span><LockKeyhole /><input aria-label="Mot de passe" value={password} onChange={(event) => setPassword(event.target.value)} type="password" required /></span>
           </label>
-          {error && <div className="login-error">Identifiants incorrects. Utilisez le mot de passe <strong>demo123</strong>.</div>}
+          {error && <div className="login-error">Identifiants incorrects. Utilisez le mot de passe de démonstration indiqué ci-dessous.</div>}
           <button className="login-submit" type="submit">Se connecter <Eye /></button>
-          <small className="login-hint">Mot de passe commun aux quatre profils : <strong>demo123</strong></small>
+          <small className="login-hint">Mot de passe commun : <strong>ProFuel#Demo2026!</strong></small>
         </form>
       </section>
     </main>

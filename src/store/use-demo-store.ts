@@ -117,7 +117,7 @@ export const useDemoStore = create<DemoState>((set) => ({
   alerts: INITIAL_ALERTS,
   login: (email, password) => {
     const user = USERS.find((candidate) => candidate.email === email.trim().toLowerCase());
-    if (!user || password !== "demo123") return false;
+    if (!user || password !== "ProFuel#Demo2026!") return false;
     set({
       user,
       role: user.role,
