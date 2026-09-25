@@ -8,7 +8,7 @@ Objectif du proto : faire **vivre** le parcours propriétaire / gérant (cuves, 
 
 ## Recommandation (une phrase)
 
-**Next.js + TypeScript + Tailwind + shadcn/ui**, fixtures JSON, carte Leaflet, **sans backend ni base** pour le mockup. Même stack web en production ; API **NestJS + PostgreSQL** et appli terrain **Flutter** plus tard.
+**Next.js + TypeScript + Tailwind + shadcn/ui + ApexCharts**, fixtures JSON, carte Leaflet, **sans backend ni base** pour le mockup. Même stack web en production ; API **NestJS + PostgreSQL** et appli terrain **Flutter** plus tard.
 
 ---
 
@@ -29,6 +29,7 @@ Le chauffeur / pompiste (photo, GPS, hors-ligne) n’est **pas** le premier écr
 | App | **Next.js 15** (App Router) | Un repo, pages dashboard + voyage + démo mobile, déploiement simple. |
 | Langage | **TypeScript** | Le modèle métier (compartiments N, mesures, rôles) casse vite sans types. |
 | UI | **Tailwind CSS** + **shadcn/ui** | Écrans admin (tables, dialogs, tabs) sans designer dédié. |
+| Graphiques dashboard | **ApexCharts** (`apexcharts` + `react-apexcharts`) | Look « ops / finance » (aires, barres, jauges, sparkline) sans Chart.js à styler à la main. |
 | Icônes | **lucide-react** | Standard shadcn. |
 | État | **Zustand** + fixtures | Switch de rôle et « replay » d’un voyage sans Redux. |
 | Données | **JSON** dans `src/mocks/` | Stations, cuves, camion 7/12 compartiments, un voyage 45 000 → 43 000 L, alertes. |
@@ -46,10 +47,31 @@ Arborescence cible du proto :
 apps/web/          # Next.js
   src/app/         # routes
   src/mocks/       # fixtures métier
-  src/components/  # citerne, cuves, carte, rapprochement
+  src/components/  # citerne, cuves, carte, rapprochement, charts
 ```
 
 Monorepo léger (`apps/web` seulement pour l’instant). `apps/api` et `apps/mobile` quand la stack cible est lancée.
+
+### ApexCharts — dashboard proprio
+
+Librairie : [ApexCharts](https://apexcharts.com/) via `react-apexcharts`. Licence MIT.
+
+**Contrainte Next.js :** le canvas utilise `window`. Tous les charts sont des Client Components chargés avec `next/dynamic` et `{ ssr: false }` (un wrapper `ApexChart` unique, pas un import dans chaque page serveur).
+
+Thème : palette sombre ou claire alignée Tailwind (CSS variables), tooltips FR, unités **L** et **mm**.
+
+Graphiques du proto (fixtures) :
+
+| Widget | Type Apex | Données mock |
+| --- | --- | --- |
+| Stock cuves 24 h / 7 j | `area` | Niveaux L dans le temps |
+| Rapprochement voyage | `bar` groupé | Déclaré GESTOCI / sonde / cuve |
+| Manquants par voyage | `bar` horizontal | Écart en L (ex. −2 000 L) |
+| Index pompes (journée) | `line` | Ouverture vs clôture |
+| Santé flotte | `radialBar` / `sparkline` | Remplissage camion, alertes ouvertes |
+| Mix stations (proprio) | `donut` | Volume reçu / vendu par site |
+
+La **citerne 2D** reste en SVG (pas un chart) : Apex sert le **pilotage**, pas la coupe du camion.
 
 ---
 
@@ -67,7 +89,7 @@ Capteurs (niveau, temp, GPS)
                 → (plus tard) push / SMS
 
 Flutter  : chauffeur + pompiste (photo bon, GPS, sync)
-Next.js  : gérant + propriétaire (même UI que le proto)
+Next.js  : gérant + propriétaire (même UI que le proto, **ApexCharts** conservé)
 ```
 
 | Couche | Choix | Pourquoi | Alternative écartée |
@@ -92,6 +114,7 @@ Matériel (hors software, à valider avec un installateur ATEX) : sondes de nive
 | Écarté pour le proto | Raison |
 | --- | --- |
 | Flutter web comme dashboard | Tables, docs, multi-pages admin plus lents à peaufiner. |
+| Recharts / Chart.js comme lib principale | Demandé **ApexCharts** pour un dashboard plus « pro » (jauges, sparklines, animations). Recharts reste possible en secours si un composant shadcn l’impose. |
 | Three.js / citerne 3D | Le client a demandé le mouvement ; le 2D lisible en plein soleil gagne. |
 | Supabase « pour aller vite » | Auth + Postgres trop tôt ; le mockup n’a pas besoin d’auth. |
 | Microservices / Kafka | 2 camions. |
@@ -103,7 +126,8 @@ Matériel (hors software, à valider avec un installateur ATEX) : sondes de nive
 
 Coche ou amende **avant** `create-next-app` :
 
-- [ ] **Proto = Next.js 15 + TS + Tailwind + shadcn** (pas Flutter, pas Figma seul)
+- [ ] **Proto = Next.js 15 + TS + Tailwind + shadcn + ApexCharts** (pas Flutter, pas Figma seul)
+- [ ] **Charts = ApexCharts** (`react-apexcharts`, import client `ssr: false`)
 - [ ] **Pas de backend** sur le mockup (fixtures JSON + Zustand)
 - [ ] **Carte = Leaflet / OSM** pour le proto
 - [ ] **Citerne = SVG 2D animé**, pas de 3D
@@ -119,7 +143,7 @@ Si un item est non : le remplacer ici, puis seulement scaffolder.
 
 ## Ordre une fois la stack validée
 
-1. Scaffolder `apps/web` (Next.js) + shadcn.
-2. Fixtures : 1 organisation, 2 stations, 2 camions, 1 voyage avec manquant.
-3. Écrans : dashboard proprio → détail voyage (citerne + carte + rapprochement) → mode chauffeur (mobile).
+1. Scaffolder `apps/web` (Next.js) + shadcn + `apexcharts` / `react-apexcharts`.
+2. Fixtures : 1 organisation, 2 stations, 2 camions, 1 voyage avec manquant + séries temporelles pour les charts.
+3. Écrans : dashboard proprio (KPI + ApexCharts) → détail voyage (citerne + carte + barres rapprochement) → mode chauffeur (mobile).
 4. Replay : bouton « simuler siphonnage » pour la réunion client.
