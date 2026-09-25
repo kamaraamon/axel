@@ -20,6 +20,11 @@ npm install
 npm run dev
 ```
 
+The app reads fuel trips, stations, and alerts from Neon Postgres. Set these environment variables (values stay out of git):
+
+- `DATABASE_URL`
+- `DATABASE_URL_UNPOOLED`
+
 ## Comptes de démonstration
 
 Mot de passe commun : `ProFuel#Demo2026!`.

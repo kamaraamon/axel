@@ -37,7 +37,8 @@ import { ApexChart, baseChartOptions } from "@/components/apex-chart";
 import { LoginScreen } from "@/components/login-screen";
 import { TankVisual } from "@/components/tank-visual";
 import { type AlertStatus, can, formatLiters, reconcile, STEP_LABELS, DRIVER_FLOW } from "@/lib/workflows";
-import { FuelAlert, Station, Trip, useDemoStore, View } from "@/store/use-demo-store";
+import { type FuelSnapshot } from "@/lib/fuel-data";
+import { currentFuelRevision, setFuelPersister, useDemoStore, type FuelAlert, type Station, type Trip, type View } from "@/store/use-demo-store";
 
 const RouteMap = dynamic(() => import("@/components/route-map"), {
   ssr: false,
@@ -72,6 +73,29 @@ export function DashboardShell() {
   useEffect(() => {
     const timer = window.setInterval(() => setClock(new Date()), 1000);
     return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const revision = currentFuelRevision();
+    let cancelled = false;
+    setFuelPersister((snapshot) => {
+      void fetch("/api/fuel", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(snapshot),
+      });
+    });
+    void fetch("/api/fuel")
+      .then((response) => response.json() as Promise<FuelSnapshot & { ok?: boolean }>)
+      .then((data) => {
+        if (cancelled || !data.ok) return;
+        useDemoStore.getState().hydrateFuel(data, revision);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+      setFuelPersister(null);
+    };
   }, []);
 
   if (!store.user) return <LoginScreen />;
