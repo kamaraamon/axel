@@ -72,7 +72,7 @@ export function DashboardShell() {
           <X size={20} />
         </button>
         <div className="product-pill"><Fuel size={16} /> Pro<span>Fuel Control</span></div>
-        <nav>
+        {allowedNav.length > 0 && <nav>
           <p>Navigation</p>
           {allowedNav.map(({ view, label, icon: Icon }) => (
             <button
@@ -87,7 +87,7 @@ export function DashboardShell() {
               {view === "alerts" && <b>1</b>}
             </button>
           ))}
-        </nav>
+        </nav>}
         <div className="sidebar-status">
           <div><i /> Système opérationnel</div>
           <small>Dernière synchro · à l’instant</small>
