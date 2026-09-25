@@ -19,3 +19,16 @@ Prototype cliquable SUD CONTRACTORS en cours : dashboard professionnel, suivi de
 npm install
 npm run dev
 ```
+
+## Comptes de démonstration
+
+Mot de passe commun : `demo123`.
+
+| Niveau | Identifiant | Périmètre |
+| --- | --- | --- |
+| Propriétaire | `proprietaire@sud.ci` | Toutes les stations, CRUD complet |
+| Gérant | `gerant@sud.ci` | Sa station, voyages et alertes, sans suppression |
+| Superviseur | `superviseur@sud.ci` | Opérations terrain, accès limité |
+| Chauffeur | `chauffeur@sud.ci` | Mission affectée uniquement |
+
+Le changement de niveau nécessite une déconnexion puis une connexion avec l’autre compte.

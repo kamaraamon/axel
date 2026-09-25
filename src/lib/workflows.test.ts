@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  can,
   DRIVER_FLOW,
   formatLiters,
   nextDriverStep,
@@ -14,6 +15,26 @@ describe("workflow chauffeur", () => {
       expect(step).toBe(DRIVER_FLOW[index]);
     }
     expect(nextDriverStep(step)).toBe("completed");
+  });
+});
+
+describe("permissions par niveau de vue", () => {
+  it("réserve les suppressions au propriétaire", () => {
+    expect(can("Propriétaire", "stations", "delete")).toBe(true);
+    expect(can("Gérant", "stations", "delete")).toBe(false);
+    expect(can("Superviseur", "trips", "delete")).toBe(false);
+  });
+
+  it("isole le chauffeur sur son workflow", () => {
+    expect(can("Chauffeur", "driver", "read")).toBe(true);
+    expect(can("Chauffeur", "dashboard", "read")).toBe(false);
+    expect(can("Chauffeur", "alerts", "read")).toBe(false);
+  });
+
+  it("autorise le gérant à modifier sans supprimer", () => {
+    expect(can("Gérant", "trips", "update")).toBe(true);
+    expect(can("Gérant", "trips", "delete")).toBe(false);
+    expect(can("Gérant", "stations", "update")).toBe(true);
   });
 });
 

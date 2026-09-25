@@ -7,6 +7,37 @@ export type DriverStep =
   | "completed";
 
 export type AlertStatus = "open" | "acknowledged";
+export type AccessRole = "Propriétaire" | "Gérant" | "Superviseur" | "Chauffeur";
+export type Resource = "dashboard" | "trips" | "stations" | "alerts" | "driver";
+export type Action = "read" | "create" | "update" | "delete";
+
+const ACCESS: Record<AccessRole, Partial<Record<Resource, Action[]>>> = {
+  Propriétaire: {
+    dashboard: ["read"],
+    trips: ["read", "create", "update", "delete"],
+    stations: ["read", "create", "update", "delete"],
+    alerts: ["read", "create", "update", "delete"],
+  },
+  Gérant: {
+    dashboard: ["read"],
+    trips: ["read", "create", "update"],
+    stations: ["read", "update"],
+    alerts: ["read", "create", "update"],
+  },
+  Superviseur: {
+    dashboard: ["read"],
+    trips: ["read", "create", "update"],
+    stations: ["read"],
+    alerts: ["read", "update"],
+  },
+  Chauffeur: {
+    driver: ["read", "update"],
+  },
+};
+
+export function can(role: AccessRole, resource: Resource, action: Action = "read") {
+  return ACCESS[role][resource]?.includes(action) ?? false;
+}
 
 export const DRIVER_FLOW: DriverStep[] = [
   "assigned",
