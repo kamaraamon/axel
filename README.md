@@ -24,6 +24,7 @@ The app reads fuel trips, stations, and alerts from Neon Postgres. Set these env
 
 - `DATABASE_URL`
 - `DATABASE_URL_UNPOOLED`
+- `BLOB_READ_WRITE_TOKEN` pour les bons de chargement et les signatures (Vercel Blob, store privé `axel-documents`)
 
 ## Comptes de démonstration
 

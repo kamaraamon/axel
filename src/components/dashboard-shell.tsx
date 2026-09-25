@@ -34,6 +34,7 @@ import {
   X,
 } from "lucide-react";
 import { ApexChart, baseChartOptions } from "@/components/apex-chart";
+import { DocumentLocker } from "@/components/document-locker";
 import { LoginScreen } from "@/components/login-screen";
 import { TankVisual } from "@/components/tank-visual";
 import { type AlertStatus, can, formatLiters, reconcile, STEP_LABELS, DRIVER_FLOW } from "@/lib/workflows";
@@ -387,6 +388,7 @@ function TripDetail() {
           <div className={result.isWithinTolerance ? "reconcile-result ok" : "reconcile-result bad"}><span>Écart calculé</span><strong>{formatLiters(result.delta)}</strong><small>{result.percentage} %</small></div>
         </div>
       </article>
+      <DocumentLocker tripId="PF-2026-0925" />
       {!simulationActive && <button className="demo-floating" onClick={simulateTheft}><Play /> Simuler la baisse de volume</button>}
     </section>
   );
@@ -469,6 +471,7 @@ function DriverWorkflow() {
         <div className="driver-progress">
           {DRIVER_FLOW.map((step, i) => <div key={step} className={i < index ? "done" : i === index ? "current" : ""}><i>{i < index ? <Check /> : i + 1}</i><span>{STEP_LABELS[step]}</span></div>)}
         </div>
+        {(driverStep === "loading" || driverStep === "in_transit" || driverStep === "arrived" || driverStep === "unloading" || driverStep === "completed") && <DocumentLocker tripId="PF-2026-0925" compact />}
         <button className="driver-action" onClick={advanceDriver} disabled={isDone}>
           {isDone ? <><Check /> Mission terminée</> : <>{driverAction(driverStep)} <ChevronRight /></>}
         </button>

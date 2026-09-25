@@ -408,6 +408,28 @@ button:disabled { cursor: default; opacity: .65; }
 .command-theme-dark .filter-row button { background:var(--cmd-panel); color:var(--cmd-muted); border-color:var(--cmd-line); }
 .command-theme-dark .filter-row .filter-active { background:var(--cmd-cyan); color:#04101c; }
 
+.document-locker { margin-top: 18px; }
+.document-locker-compact { margin: 12px 16px 0; padding: 14px; }
+.document-actions { display: grid; gap: 14px; }
+.document-actions .ghost-button { position: relative; overflow: hidden; width: fit-content; }
+.document-actions input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.signature-pad { display: grid; gap: 8px; }
+.signature-pad > span { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: #64748b; }
+.signature-pad canvas { width: 100%; height: 120px; border: 1px dashed #cbd5e1; border-radius: 12px; background: white; touch-action: none; }
+.signature-pad > div { display: flex; gap: 8px; flex-wrap: wrap; }
+.document-status { color: #b45309; font-size: 12px; margin: 10px 0 0; }
+.document-list { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
+.document-list li { display: grid; grid-template-columns: 18px 1fr auto auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid #e2e8f0; }
+.document-list strong, .document-list small { display: block; }
+.document-list small { color: #64748b; font-size: 11px; }
+.document-list a { font-size: 12px; font-weight: 700; color: #2b62ac; }
+.document-list button { border: 0; background: #f1f5f9; width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; }
+.document-empty { color: #64748b; font-size: 12px; }
+.command-theme-dark .document-list li { border-color: var(--cmd-line-soft); }
+.command-theme-dark .document-list a { color: var(--cmd-cyan); }
+.command-theme-dark .signature-pad > span, .command-theme-dark .document-list small, .command-theme-dark .document-empty { color: var(--cmd-muted); }
+.phone-frame { overflow: auto; }
+
 .login-brand img { width:96px; height:74px; object-fit:cover; object-position:center top; border-radius:7px; background:white; }
 .login-brand-panel { background:radial-gradient(circle at 70% 30%,rgba(43,98,172,.45),transparent 34%),linear-gradient(140deg,#05070b,#071a2c); }
 
