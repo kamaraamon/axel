@@ -26,12 +26,8 @@ export function LoginScreen() {
     <main className="login-page">
       <section className="login-brand-panel">
         <div className="login-brand">
-          <svg viewBox="0 0 100 80" aria-hidden="true">
-            <path d="M42 28C45 14 58 4 75 4H98S68 4 56 16C48 24 44 32 42 28Z" fill="#F18313" />
-            <path d="M12 4H42C58 4 68 14 68 28S54 52 42 54H12C6 54 2 50 2 44V14C2 8 6 4 12 4Z" fill="#2B62AC" />
-            <rect x="2" y="60" width="96" height="12" rx="3" fill="#2B62AC" />
-          </svg>
-          <span>SUD CONTRACTORS</span>
+          <img src="/sud-contractors-logo.jpg" alt="SUD CONTRACTORS" />
+          <span>PROFUEL CONTROL</span>
         </div>
         <div>
           <span className="eyebrow light">ProFuel Control</span>

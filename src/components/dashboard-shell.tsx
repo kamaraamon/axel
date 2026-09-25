@@ -16,7 +16,9 @@ import {
   LayoutDashboard,
   LogOut,
   MapPin,
+  Maximize2,
   Menu,
+  Moon,
   Pencil,
   Play,
   Plus,
@@ -27,6 +29,7 @@ import {
   ShieldAlert,
   Trash2,
   Truck,
+  Sun,
   UserRound,
   X,
 } from "lucide-react";
@@ -41,6 +44,11 @@ const RouteMap = dynamic(() => import("@/components/route-map"), {
   loading: () => <div className="map-placeholder">Chargement de la carte…</div>,
 });
 
+const FuelGlobe = dynamic(() => import("@/components/fuel-globe"), {
+  ssr: false,
+  loading: () => <div className="globe-loading"><i /><span>Initialisation du réseau…</span></div>,
+});
+
 const navItems: Array<{ view: View; label: string; icon: typeof LayoutDashboard }> = [
   { view: "dashboard", label: "Vue d’ensemble", icon: LayoutDashboard },
   { view: "trips", label: "Voyages", icon: Route },
@@ -52,6 +60,8 @@ export function DashboardShell() {
   const store = useDemoStore();
   const [mobileNav, setMobileNav] = useState(false);
   const [newTrip, setNewTrip] = useState(false);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [clock, setClock] = useState(new Date());
 
   useEffect(() => {
     if (!store.notification) return;
@@ -59,13 +69,18 @@ export function DashboardShell() {
     return () => window.clearTimeout(timer);
   }, [store.notification, store.clearNotification]);
 
+  useEffect(() => {
+    const timer = window.setInterval(() => setClock(new Date()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
   if (!store.user) return <LoginScreen />;
 
   const allowedNav = navItems.filter((item) => can(store.role, item.view === "trip" ? "trips" : item.view, "read"));
   const canCreateTrip = can(store.role, "trips", "create");
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell command-theme-${theme}`}>
       <aside className={mobileNav ? "sidebar sidebar-open" : "sidebar"}>
         <Brand />
         <button className="mobile-close" onClick={() => setMobileNav(false)} aria-label="Fermer le menu">
@@ -101,18 +116,24 @@ export function DashboardShell() {
       <main className="main">
         <header className="topbar">
           <button className="menu-button" onClick={() => setMobileNav(true)} aria-label="Ouvrir le menu"><Menu /></button>
-          <div>
-            <span className="eyebrow">Centre de contrôle carburant</span>
-            <h1>{titleForView(store.view)}</h1>
-          </div>
+          <Brand />
+          <nav className="command-nav" aria-label="Navigation principale">
+            {allowedNav.map(({ view, label, icon: Icon }) => (
+              <button key={view} className={store.view === view || (view === "trips" && store.view === "trip") ? "on" : ""} onClick={() => store.navigate(view)}>
+                <Icon /> <span>{label}</span>
+              </button>
+            ))}
+          </nav>
           <div className="header-actions">
+            <div className="command-clock"><strong>{clock.toLocaleTimeString("fr-FR")}</strong><span>{clock.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}</span></div>
+            <span className="live-command"><i /> Temps réel</span>
             <span className="role-badge"><UserRound size={15} /> {store.role}</span>
             {can(store.role, "alerts") && <button className="icon-button" aria-label="Notifications" onClick={() => store.navigate("alerts")}>
               <Bell size={19} /><i />
             </button>}
-            {canCreateTrip && <button className="primary-button" onClick={() => setNewTrip(true)}>
-              <Plus size={17} /> Nouveau voyage
-            </button>}
+            <button className="icon-button" aria-label="Changer de thème" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>{theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}</button>
+            <button className="icon-button fullscreen-button" aria-label="Plein écran" onClick={() => document.documentElement.requestFullscreen?.()}><Maximize2 size={17} /></button>
+            {canCreateTrip && <button className="command-add" aria-label="Nouveau voyage" onClick={() => setNewTrip(true)}><Plus size={17} /></button>}
             <button className="icon-button logout-button" aria-label="Se déconnecter" title="Changer de profil" onClick={store.logout}><LogOut size={18} /></button>
           </div>
         </header>
@@ -136,98 +157,149 @@ export function DashboardShell() {
 function Brand() {
   return (
     <div className="brand">
-      <svg viewBox="0 0 100 80" aria-hidden="true">
-        <path d="M42 28 C45 14,58 4,75 4 L98 4 C98 4,68 4,56 16 C48 24,44 32,42 28Z" fill="#F18313" />
-        <path d="M12 4H42C58 4,68 14,68 28S54 52,42 54H12C6 54,2 50,2 44V14C2 8,6 4,12 4Z" fill="#2B62AC" />
-        <rect x="2" y="60" width="96" height="12" rx="3" fill="#2B62AC" />
-      </svg>
-      <div><strong>SUD CONTRACTORS</strong><span>Maîtrisez vos opérations</span></div>
+      <img src="/sud-contractors-logo.jpg" alt="SUD CONTRACTORS" />
+      <div><strong>PROFUEL CONTROL</strong><span>Operations command center</span></div>
     </div>
   );
 }
 
 function Dashboard({ onTrip }: { onTrip: () => void }) {
-  const { simulationActive, simulateTheft } = useDemoStore();
-  const stockSeries = [{ name: "Stock total", data: [118, 116, 112, 109, 106, 103, 101, 98, 95, 92, 89, 86].map((x) => x * 1000) }];
-  const reconciliation = simulationActive ? [45000, 45000, 43000] : [45000, 45000, 45000];
+  const { simulationActive, simulateTheft, stations, trips, alerts } = useDemoStore();
+  const [selected, setSelected] = useState("Station Cocody");
+  const [period, setPeriod] = useState("24 h");
+  const stockSeries = [{ name: "Stock", data: [104, 101, 98, 96, 92, 90, 86, 88, 85, 82, 86, 84].map((value) => value * 1000) }];
+  const chartTheme = {
+    ...baseChartOptions,
+    chart: { ...baseChartOptions.chart, foreColor: "#74859a", background: "transparent" },
+    grid: { borderColor: "rgba(90, 123, 153, .16)", strokeDashArray: 3 },
+    tooltip: { theme: "dark" as const },
+  };
+  const totalStock = stations.reduce((sum, station) => sum + station.stock, 0);
+  const totalCapacity = stations.reduce((sum, station) => sum + station.capacity, 0);
 
   return (
-    <>
-      <section className="hero-strip">
-        <div>
-          <span className="eyebrow light">Vendredi 25 septembre 2026 · 11:18</span>
-          <h2>Maîtrisez vos <em>opérations,</em><br />réduisez vos pertes.</h2>
-          <p>Supervision temps réel de 3 stations et 2 véhicules.</p>
-        </div>
-        <div className="live-badge"><i /> Données en direct</div>
-      </section>
+    <section className="command-center">
+      <div className="scanlines" />
+      <div className="command-col command-left">
+        <CommandPanel title="Réseau de stations" meta="Niveau actuel">
+          <div className="station-rank">
+            {stations.map((station, index) => (
+              <button key={station.id} className={selected === station.name ? "selected" : ""} onClick={() => setSelected(station.name)}>
+                <b>{index + 1}</b><span>{station.name.replace("Station ", "")}</span>
+                <i><em style={{ width: `${(station.stock / station.capacity) * 100}%` }} /></i>
+                <strong>{Math.round(station.stock / 100) / 10}k</strong>
+                <small>{Math.round((station.stock / station.capacity) * 100)}%</small>
+              </button>
+            ))}
+          </div>
+        </CommandPanel>
 
-      <section className="kpi-grid">
-        <Kpi icon={Database} label="Stock disponible" value="86 420 L" note="68 % de capacité" tone="orange" />
-        <Kpi icon={Truck} label="Voyages en cours" value="01" note="CI 01 AB 4521 · En route" tone="blue" />
-        <Kpi icon={CircleGauge} label="Écart moyen / 30 j" value="-0,42 %" note="Dans la tolérance cible" tone="green" />
-        <Kpi icon={AlertTriangle} label="Alertes ouvertes" value={simulationActive ? "02" : "01"} note={simulationActive ? "1 critique · 1 technique" : "1 alerte technique"} tone="red" />
-      </section>
-
-      <section className="dashboard-grid">
-        <article className="card chart-card wide">
-          <CardHeader label="Tendance consolidée" title="Évolution du stock carburant" action="7 derniers jours" />
+        <CommandPanel title="Répartition du stock" meta={`${formatLiters(totalStock)}`}>
           <ApexChart
-            type="area"
-            height={285}
-            series={stockSeries}
+            type="donut"
+            height={190}
+            series={stations.map((station) => station.stock)}
             options={{
-              ...baseChartOptions,
-              chart: { ...baseChartOptions.chart, id: "stock-area" },
-              xaxis: { categories: ["00h", "02h", "04h", "06h", "08h", "10h", "12h", "14h", "16h", "18h", "20h", "22h"] },
-              yaxis: { labels: { formatter: (v) => `${Math.round(v / 1000)}k L` } },
-              stroke: { curve: "smooth", width: 3 },
-              fill: { type: "gradient", gradient: { opacityFrom: 0.38, opacityTo: 0.04 } },
+              ...chartTheme,
+              labels: stations.map((station) => station.name.replace("Station ", "")),
+              colors: ["#39d7ff", "#49e6bb", "#8aa7ff"],
+              stroke: { width: 0 },
+              legend: { position: "bottom", labels: { colors: "#74859a" }, fontSize: "10px" },
+              plotOptions: { pie: { donut: { size: "70%", labels: { show: true, total: { show: true, label: "TOTAL", color: "#74859a", formatter: () => `${Math.round(totalStock / 1000)}k L` } } } } },
             }}
           />
-        </article>
+        </CommandPanel>
 
-        <article className="card chart-card">
-          <CardHeader label="Volume par étape" title="Rapprochement en cours" action="PF-2026-0925" />
+        <CommandPanel title="Autonomie estimée" meta="Jours">
+          <div className="inventory-bars">
+            {stations.map((station, index) => {
+              const days = [3.4, 4.2, 2.8][index] ?? 3;
+              return <button key={station.id} onClick={() => setSelected(station.name)}><span>{station.name.replace("Station ", "")}</span><i><em style={{ width: `${Math.min(days / 5 * 100, 100)}%` }} /></i><strong>{days} j</strong></button>;
+            })}
+          </div>
+        </CommandPanel>
+      </div>
+
+      <div className="command-mid">
+        <div className="command-kpis">
+          <CommandKpi label="Stock réseau" value={Math.round(totalStock / 1000).toString()} unit="k L" delta="+3,2 %" />
+          <CommandKpi label="Capacité" value={Math.round((totalStock / totalCapacity) * 100).toString()} unit="%" delta="Stable" />
+          <CommandKpi label="Voyages actifs" value="01" unit="" delta="En route" />
+          <CommandKpi label="Conformité" value="99,6" unit="%" delta="+0,4 %" />
+          <CommandKpi label="Alertes" value={simulationActive ? "02" : "01"} unit="" delta={simulationActive ? "Critique" : "Technique"} danger={simulationActive} />
+        </div>
+
+        <div className="globe-stage">
+          <div className="globe-title"><b>RÉSEAU CARBURANT ABIDJAN</b><small>LIVE OPERATIONS · GPS + IOT</small></div>
+          <FuelGlobe onSelect={setSelected} />
+          <div className="hud-corners"><i /><i /><i /><i /></div>
+          <div className="globe-readout"><span>Site sélectionné</span><strong>{selected}</strong><b>ONLINE</b></div>
+          <div className="globe-hint">Glisser pour pivoter · molette pour zoomer</div>
+        </div>
+
+        <CommandPanel title="Stock réseau & consommation" meta={
+          <div className="period-switch">{["24 h", "7 j", "30 j"].map((item) => <button className={period === item ? "on" : ""} key={item} onClick={() => setPeriod(item)}>{item}</button>)}</div>
+        }>
+          <ApexChart
+            type="area"
+            height={190}
+            series={stockSeries}
+            options={{
+              ...chartTheme,
+              colors: ["#39d7ff"],
+              xaxis: { categories: ["00h", "02h", "04h", "06h", "08h", "10h", "12h", "14h", "16h", "18h", "20h", "22h"], axisBorder: { show: false }, axisTicks: { show: false } },
+              yaxis: { labels: { formatter: (value) => `${Math.round(value / 1000)}k` } },
+              stroke: { curve: "smooth", width: 2 },
+              fill: { type: "gradient", gradient: { opacityFrom: .38, opacityTo: .01 } },
+            }}
+          />
+        </CommandPanel>
+      </div>
+
+      <div className="command-col command-right">
+        <CommandPanel title="Voyages récents" meta="Écart">
+          <div className="command-trips">
+            {trips.slice(0, 5).map((trip, index) => (
+              <button key={trip.id} onClick={index === 0 ? onTrip : undefined}><span><b>{trip.route.replace("GESTOCI → ", "")}</b><small>{trip.id}</small></span><strong>{formatLiters(trip.volume)}</strong><em className={trip.delta && trip.delta < -500 ? "bad" : ""}>{trip.delta === null ? "LIVE" : `${trip.delta > 0 ? "+" : ""}${trip.delta} L`}</em></button>
+            ))}
+          </div>
+        </CommandPanel>
+
+        <CommandPanel title="Alertes temps réel" meta={`${alerts.length} actives`}>
+          <div className="command-alerts">
+            <div className="alert-lane">
+              {[...alerts, ...alerts].map((alert, index) => <button key={`${alert.id}-${index}`} onClick={alert.id === "ALT-001" ? simulateTheft : undefined} className={alert.severity === "Critique" ? "critical" : ""}><time>{index % 2 ? "09:18" : "09:41"}</time><span>{alert.title}</span><b>{alert.severity === "Critique" ? "A" : "B"}</b></button>)}
+            </div>
+          </div>
+          <button className="simulate-command" onClick={simulateTheft}><Play /> {simulationActive ? "Incident simulé · −2 000 L" : "Simuler une anomalie"}</button>
+        </CommandPanel>
+
+        <CommandPanel title="Rapprochement du voyage" meta="PF-2026-0925">
           <ApexChart
             type="bar"
-            height={285}
-            series={[{ name: "Volume", data: reconciliation }]}
+            height={190}
+            series={[{ name: "Volume", data: [45000, 45000, simulationActive ? 43000 : 45000] }]}
             options={{
-              ...baseChartOptions,
-              xaxis: { categories: ["Déclaré", "Départ", "Arrivée"] },
-              yaxis: { min: 40000, labels: { formatter: (v) => `${Math.round(v / 1000)}k` } },
-              plotOptions: { bar: { borderRadius: 7, distributed: true, columnWidth: "52%" } },
-              colors: ["#2B62AC", "#16A34A", simulationActive ? "#DC2626" : "#FF7900"],
+              ...chartTheme,
+              xaxis: { categories: ["Bon", "Départ", "Arrivée"], axisBorder: { show: false } },
+              yaxis: { min: 40000, labels: { formatter: (value) => `${Math.round(value / 1000)}k` } },
+              colors: ["#39d7ff", "#49e6bb", simulationActive ? "#ff7a6b" : "#8aa7ff"],
+              plotOptions: { bar: { distributed: true, borderRadius: 2, columnWidth: "46%" } },
               legend: { show: false },
             }}
           />
-        </article>
-      </section>
-
-      <section className="dashboard-grid">
-        <article className="card wide live-trip">
-          <CardHeader label="Mission en direct" title="GESTOCI → Station Cocody" action="Départ 09:12" />
-          <div className="trip-live-content">
-            <TankVisual critical={simulationActive} />
-            <div className="trip-summary">
-              <div><MapPin /><span>Position actuelle<strong>Boulevard de Vridi, Abidjan</strong></span></div>
-              <div><Clock3 /><span>Arrivée estimée<strong>11:46 · dans 28 min</strong></span></div>
-              <div><UserRound /><span>Chauffeur<strong>Yao Kouassi</strong></span></div>
-              <button className="secondary-button" onClick={onTrip}>Ouvrir le voyage <ChevronRight size={16} /></button>
-            </div>
-          </div>
-        </article>
-        <article className={simulationActive ? "card alert-panel critical" : "card alert-panel"}>
-          <span className="eyebrow">Démonstration workflow</span>
-          <ShieldAlert size={34} />
-          <h3>{simulationActive ? "Perte détectée !" : "Tester la détection"}</h3>
-          <p>{simulationActive ? "Baisse de 2 000 L hors zone autorisée à 09:41." : "Simulez une variation de volume pendant le trajet."}</p>
-          <button onClick={simulateTheft}><Play size={16} /> {simulationActive ? "Relancer la simulation" : "Simuler un siphonnage"}</button>
-        </article>
-      </section>
-    </>
+        </CommandPanel>
+      </div>
+    </section>
   );
+}
+
+function CommandPanel({ title, meta, children }: { title: string; meta?: ReactNode; children: ReactNode }) {
+  return <article className="command-panel" data-reveal><header><h2>{title}</h2><div>{meta}</div></header><div className="command-panel-body">{children}</div></article>;
+}
+
+function CommandKpi({ label, value, unit, delta, danger }: { label: string; value: string; unit: string; delta: string; danger?: boolean }) {
+  return <article className={`command-kpi ${danger ? "danger" : ""}`}><span>{label}</span><strong>{value}<small>{unit}</small></strong><em>{delta}</em></article>;
 }
 
 function Kpi({ icon: Icon, label, value, note, tone }: { icon: typeof Fuel; label: string; value: string; note: string; tone: string }) {

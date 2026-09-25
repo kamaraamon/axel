@@ -108,3 +108,24 @@ test("connexion, CRUD propriétaire et isolation des quatre rôles", async ({ pa
   await demoPause(page);
   await logout(page);
 });
+
+test("interactions du centre de commandement", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Propriétaire", exact: false }).click();
+  await page.getByRole("button", { name: "Se connecter" }).click();
+
+  await expect(page.locator(".command-center")).toBeVisible();
+  await expect(page.locator(".globe-stage canvas")).toBeVisible({ timeout: 15_000 });
+
+  await page.locator(".station-rank button").filter({ hasText: "Marcory" }).click();
+  await expect(page.locator(".globe-readout")).toContainText("Station Marcory");
+
+  await page.getByRole("button", { name: "Changer de thème" }).click();
+  await expect(page.locator(".app-shell")).toHaveClass(/command-theme-light/);
+  await page.getByRole("button", { name: "Changer de thème" }).click();
+  await expect(page.locator(".app-shell")).toHaveClass(/command-theme-dark/);
+
+  await page.getByRole("button", { name: "Simuler une anomalie" }).click();
+  await expect(page.getByText("Incident simulé · −2 000 L")).toBeVisible();
+  await expect(page.getByText("02", { exact: true })).toBeVisible();
+});
